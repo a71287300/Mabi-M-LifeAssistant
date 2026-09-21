@@ -53,6 +53,7 @@
 MabiLifeAssistant/
 ├─ MainWindow.xaml            # WPF 介面
 ├─ MainWindow.xaml.cs         # 自動流程、快捷鍵與設定
+├─ AutomationOrchestrator.cs  # 可測試的自動化回合流程
 ├─ AutomationSettings.cs      # 設定讀寫、版本遷移與快捷鍵安全規則
 ├─ WorkStateRoundTracker.cs   # 工作回合狀態機與去抖動
 ├─ SkillCatalog.cs            # 八種支援的生活技能

@@ -18,7 +18,7 @@ namespace MabiLifeAssistant;
 
 public partial class MainWindow : Window
 {
-    private const int IdleSeconds = 5;
+    private const int IdleSeconds = AutomationOrchestrator.StabilitySeconds;
     private static string[] SkillNames => SkillCatalog.Names;
 
     private readonly ObservableCollection<WindowChoice> _windows = new();
@@ -851,189 +851,19 @@ public partial class MainWindow : Window
         var target = SelectedWindow ?? throw new InvalidOperationException("請先選取遊戲視窗。");
         if (_recognizer is null)
             throw new InvalidOperationException(_recognitionUnavailableReason ?? "繁體中文辨識元件尚未就緒。");
-        var lastInputSeen = _activityMonitor.LastUserInputMilliseconds;
-        var lastUiUpdate = 0L;
-        var motionDetector = new GameMotionDetector();
-        var workStateClassifier = WorkStateClassifier.Create();
-        var lastMotionAt = Environment.TickCount64;
-        var lastMotionSampleAt = 0L;
-        var roundTracker = new WorkStateRoundTracker();
 
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            _automationStage = "檢查遊戲視窗";
-            if (!GameWindowService.IsUsable(target.Handle))
-                throw new InvalidOperationException("遊戲視窗已關閉或最小化。請重新選取視窗後再開始。");
+        var orchestrator = new AutomationOrchestrator(
+            target,
+            _selectedSkillIndex,
+            _settings.RequireInputStability,
+            _activityMonitor,
+            OpenLifeSkillsGuideAsync,
+            HasUserActedSince,
+            stage => _automationStage = stage,
+            SetRunState,
+            exception => SetErrorStatus("無法切換至遊戲視窗", BuildAutomationErrorDetail(exception)));
 
-            var now = Environment.TickCount64;
-            var lastInput = _activityMonitor.LastUserInputMilliseconds;
-            if (now - lastMotionSampleAt >= 900)
-            {
-                _automationStage = "搜尋遊戲畫面中的指南針或工作圖案";
-                var frame = await Task.Run(() => GameWindowService.CaptureClient(target.Handle), cancellationToken);
-                var workPrediction = workStateClassifier.PredictAnywhere(frame);
-                var observedState = workPrediction.State == WorkState.Unknown && motionDetector.IsWorkIndicatorActive(frame, workPrediction.Bounds)
-                    ? WorkState.Working
-                    : workPrediction.State;
-                if (observedState == WorkState.Working)
-                {
-                    motionDetector.Reset();
-                }
-                else if (motionDetector.HasSignificantMotion(frame, workPrediction.Bounds))
-                {
-                    lastMotionAt = Environment.TickCount64;
-                }
-
-                // The stop square can be visible for fewer than three samples,
-                // so the five-frame vote may never become WorkIndicatorActive.
-                // Remember any confirmed working sample for this submitted
-                // round instead of relying only on the debounced UI state.
-                // A round must first show the in-game working indicator. Once
-                // that indicator has disappeared and two consecutive idle
-                // frames have arrived, release the round gate and start a
-                // fresh stability timer for the next round.
-                if (roundTracker.Observe(observedState))
-                {
-                    lastMotionAt = Environment.TickCount64;
-                    motionDetector.Reset();
-                }
-                lastMotionSampleAt = Environment.TickCount64;
-            }
-
-            if (roundTracker.WorkIndicatorActive)
-            {
-                if (now - lastUiUpdate > 900)
-                {
-                    SetRunState("工作中", "已找到綠色圓形與白色停止方塊，暫停辨識與點擊；圖案消失後再等待停止。按 Esc 暫停。", "#67D99B");
-                    lastUiUpdate = now;
-                }
-
-                await Task.Delay(250, cancellationToken);
-                continue;
-            }
-
-            if (roundTracker.WorkStateUnknown)
-            {
-                if (now - lastUiUpdate > 900)
-                {
-                    SetRunState("確認中", "尚未連續找到可確認的指南針或工作圖案，暫停辨識與點擊以避免誤操作。按 Esc 暫停。", "#E8C78B");
-                    lastUiUpdate = now;
-                }
-
-                await Task.Delay(250, cancellationToken);
-                continue;
-            }
-
-            if (roundTracker.WaitingForRoundActivity)
-            {
-                if (now - lastUiUpdate > 900)
-                {
-                    var workSeenText = roundTracker.RoundWorkSeen ? "已確認工作圖案出現" : "等待確認工作圖案出現";
-                    SetRunState("等待完成", $"{workSeenText}；工作圖案消失並確認停止後，等待指南針穩定 {IdleSeconds} 秒自動開始下一輪。按 Esc 暫停。", "#E8C78B");
-                    lastUiUpdate = now;
-                }
-
-                await Task.Delay(250, cancellationToken);
-                continue;
-            }
-
-            var inputIdleFor = Math.Max(0, now - lastInput);
-            var visualIdleFor = Math.Max(0, now - lastMotionAt);
-            var idleFor = _settings.RequireInputStability
-                ? Math.Min(inputIdleFor, visualIdleFor)
-                : visualIdleFor;
-            var idleRequired = IdleSeconds * 1000L;
-
-            if (now - lastUiUpdate > 900)
-            {
-                var idleRemaining = Math.Max(0, idleRequired - idleFor);
-                var waitingSeconds = (int)Math.Ceiling(idleRemaining / 1000d);
-                var inputStableSeconds = (int)Math.Min(IdleSeconds, inputIdleFor / 1000d);
-                var visualStableSeconds = (int)Math.Min(IdleSeconds, visualIdleFor / 1000d);
-                var runTitle = waitingSeconds > 0 ? "閒置中" : "準備開始";
-                var runDetail = waitingSeconds > 0
-                    ? _settings.RequireInputStability
-                        ? $"輸入穩定 {inputStableSeconds}/{IdleSeconds} 秒；指南針穩定 {visualStableSeconds}/{IdleSeconds} 秒；還需約 {waitingSeconds} 秒。按 Esc 暫停。"
-                        : $"輸入穩定等待已關閉；指南針穩定 {visualStableSeconds}/{IdleSeconds} 秒；還需約 {waitingSeconds} 秒。按 Esc 暫停。"
-                    : _settings.RequireInputStability
-                        ? $"輸入與找到的指南針已穩定 {IdleSeconds} 秒，即將執行「{SkillNames[_selectedSkillIndex]}」。按 Esc 暫停。"
-                        : $"找到的指南針已穩定 {IdleSeconds} 秒，即將執行「{SkillNames[_selectedSkillIndex]}」。按 Esc 暫停。";
-                SetRunState(runTitle, runDetail, "#A6E4C1");
-                lastUiUpdate = now;
-            }
-
-            if (idleFor < idleRequired)
-            {
-                await Task.Delay(250, cancellationToken);
-                continue;
-            }
-
-            lastInputSeen = _activityMonitor.LastUserInputMilliseconds;
-            _automationStage = "切換至指定遊戲視窗";
-            if (!GameWindowService.Focus(target.Handle))
-            {
-                SetErrorStatus("無法切換至遊戲視窗", BuildAutomationErrorDetail(new InvalidOperationException("指定視窗目前無法取得前景焦點；程式沒有送出任何遊戲操作。")));
-                await Task.Delay(1000, cancellationToken);
-                continue;
-            }
-
-            await Task.Delay(250, cancellationToken);
-            if (HasUserActedSince(lastInputSeen))
-                continue;
-
-            _automationStage = "辨識生活力指南";
-            SetRunState("辨識中", "只分析選取視窗；先確認生活力指南，再定位所選技能。按 Esc 可停止。", "#A6D7E4");
-            var lines = await OpenLifeSkillsGuideAsync(target, cancellationToken, () => HasUserActedSince(lastInputSeen));
-            if (lines is null || HasUserActedSince(lastInputSeen))
-                continue;
-
-            if (HasUserActedSince(lastInputSeen))
-                continue;
-
-            _automationStage = "定位所選採集項目";
-            var skillFrame = await Task.Run(() => GameWindowService.CaptureClient(target.Handle), cancellationToken);
-            var proceedButton = GameWindowService.FindProceedButtons(skillFrame)[_selectedSkillIndex];
-            if (proceedButton is null)
-                throw new InvalidOperationException($"生活力指南已確認，但找不到「{SkillNames[_selectedSkillIndex]}」卡片裡的綠色進行按鈕；已停止。");
-            if (HasUserActedSince(lastInputSeen))
-                continue;
-
-            _automationStage = "點擊所選採集項目的進行按鈕";
-            GameWindowService.Click(target.Handle, proceedButton.Value);
-            await Task.Delay(450, cancellationToken);
-            if (HasUserActedSince(lastInputSeen))
-                continue;
-
-            _automationStage = "等待遊戲確認視窗";
-            System.Windows.Point? confirmationButton = null;
-            for (var attempt = 0; attempt < 3; attempt++)
-            {
-                await Task.Delay(attempt == 0 ? 250 : 350, cancellationToken);
-                var confirmationFrame = await Task.Run(() => GameWindowService.CaptureClient(target.Handle), cancellationToken);
-                confirmationButton = GameWindowService.FindConfirmationButton(confirmationFrame);
-                if (confirmationButton is not null)
-                    break;
-            }
-
-            if (confirmationButton is not { } confirmationPoint)
-                throw new InvalidOperationException("點擊採集項目後，連續 3 次擷取都找不到確認按鈕；已停止，沒有進入下一輪等待。");
-
-            _automationStage = "確認十次採集";
-            SetRunState("確認採集", "已定位遊戲確認視窗，正在確認十次採集。按 Esc 可停止。", "#A6D7E4");
-            if (HasUserActedSince(lastInputSeen))
-                continue;
-            GameWindowService.Click(target.Handle, confirmationPoint);
-            await Task.Delay(450, cancellationToken);
-
-            _automationStage = "等待遊戲動作完成";
-            roundTracker.BeginRound();
-            motionDetector.Reset();
-            lastMotionAt = Environment.TickCount64;
-            lastMotionSampleAt = 0;
-            SetStatus("工作中", $"已確認「{SkillNames[_selectedSkillIndex]}」並開始遊戲內十次採集；偵測到動作停止後會自動開始下一輪。", "#67D99B");
-            lastUiUpdate = Environment.TickCount64;
-        }
+        await orchestrator.RunAsync(cancellationToken);
     }
 
     private string BuildAutomationErrorDetail(Exception exception)
