@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Build, test and package
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore .\MabiLifeAssistant.sln
+
+      - name: Build
+        run: dotnet build .\MabiLifeAssistant.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test .\tests\MabiLifeAssistant.Tests\MabiLifeAssistant.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+
+      - name: Upload test results and coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-and-coverage
+          path: |
+            **/*.trx
+            **/TestResults/**/coverage.cobertura.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Publish single-file Windows build
+        shell: pwsh
+        run: .\publish.ps1
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: MabiLifeAssistant-win-x64
+          path: dist-final/
+          if-no-files-found: error
+          retention-days: 14

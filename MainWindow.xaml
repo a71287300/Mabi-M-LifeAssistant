@@ -1,0 +1,244 @@
+<Window x:Class="MabiLifeAssistant.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mabi Life · 生活助手" Icon="/MabiLifeAssistant;component/assets/app-icon.ico" Width="1180" Height="850" MinWidth="1000" MinHeight="740"
+        FontFamily="Microsoft JhengHei UI, Segoe UI Variable Text, Segoe UI" FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource Canvas}" Foreground="{StaticResource TextMain}"
+        PreviewKeyDown="WindowPreviewKeyDown"
+        Closing="WindowClosing">
+    <Window.Resources>
+        <DataTemplate x:Key="WindowChoiceTemplate">
+            <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" Foreground="#EAF0EB" />
+        </DataTemplate>
+    </Window.Resources>
+    <Grid Margin="26,21,26,22">
+        <Grid.Background>
+            <ImageBrush ImageSource="/MabiLifeAssistant;component/assets/life-map-bg.png" Stretch="UniformToFill" Opacity="0.16" />
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="72" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="104" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="1,0,1,15">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Border Width="42" Height="42" CornerRadius="13" Background="#294236" BorderBrush="#496451" BorderThickness="1" Margin="0,0,13,0" ClipToBounds="True">
+                    <Image Source="/MabiLifeAssistant;component/assets/app-icon.png" Stretch="Uniform" Margin="4" />
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="MABI  /  LIFE" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Mint}" />
+                    <TextBlock Text="瑪奇生活助手" FontSize="21" FontWeight="SemiBold" Margin="0,2,0,0" />
+                </StackPanel>
+            </StackPanel>
+            <Border Grid.Column="1" Background="#19231E" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="20" Padding="12,8" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal">
+                    <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="#7B8980" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBlock x:Name="HeaderStatusText" Text="尚未啟動" FontSize="11" Foreground="#B9C5BC" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Main workspace -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="0.95*"/><ColumnDefinition Width="1.05*"/></Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}" Padding="18" Margin="0,0,9,0">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="01  /  遊戲視窗" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Mint}" />
+                            <TextBlock Text="選取角色所在的視窗" FontSize="16" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="重新整理" Style="{StaticResource SmallButton}" Click="RefreshWindowsClick" VerticalAlignment="Center" />
+                    </Grid>
+                    <Grid Grid.Row="1" Margin="0,14,0,12">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <ComboBox x:Name="WindowComboBox" ItemTemplate="{StaticResource WindowChoiceTemplate}" Style="{StaticResource FieldCombo}"
+                                  SelectionChanged="WindowSelectionChanged" VerticalContentAlignment="Center" Height="38" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                            <Button Content="按下 C" Style="{StaticResource SmallButton}" Margin="8,0,0,0" Click="OpenMenuClick" ToolTip="將遊戲帶到前景並按下 C" />
+                            <Button x:Name="RecognizeLifePowerButton" Content="辨識生活力" Style="{StaticResource SmallButton}" Margin="7,0,0,0" Click="RecognizeLifePowerClick" ToolTip="辨識生活力卡片並在預覽上標記" />
+                            <Button x:Name="RecognizeSkillButton" Content="辨識採集項目" Style="{StaticResource SmallButton}" Margin="7,0,0,0" Click="RecognizeSkillClick" ToolTip="辨識八個採集項目並在預覽上標記" />
+                        </StackPanel>
+                    </Grid>
+                    <Border Grid.Row="2" Background="{StaticResource PanelInset}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
+                        <Grid x:Name="PreviewHost" Background="#0D120F" ClipToBounds="True">
+                            <Image Source="/MabiLifeAssistant;component/assets/life-map-bg.png" Stretch="UniformToFill" Opacity="0.32" IsHitTestVisible="False" />
+                            <TextBlock x:Name="PreviewPlaceholder" Text="選取遊戲視窗後，這裡會顯示即時預覽" FontSize="12" Foreground="#748279" TextWrapping="Wrap" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="40" />
+                            <Image x:Name="PreviewImage" Stretch="Uniform" IsHitTestVisible="False" Visibility="Collapsed" />
+                            <Canvas x:Name="PreviewOverlay" IsHitTestVisible="False" ClipToBounds="True" SizeChanged="PreviewOverlaySizeChanged" />
+                            <Border x:Name="PreviewTag" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="11" Background="#D91A241E" CornerRadius="6" Padding="8,5" Visibility="Collapsed">
+                                <StackPanel Orientation="Horizontal"><Ellipse x:Name="PreviewDot" Width="6" Height="6" Fill="{StaticResource Mint}" VerticalAlignment="Center" Margin="0,0,6,0"/><TextBlock x:Name="PreviewTagText" Text="即時預覽" FontSize="10" Foreground="#DFE9E1" /></StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <Grid Grid.Row="3" Margin="1,13,1,0">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Name="PreviewHelpText" Text="即時預覽只供確認視窗；開始後會自動辨識生活力與採集項目。" FontSize="11" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" />
+                            <TextBlock x:Name="RecognitionStatusText" Text="正在載入繁體中文辨識…" FontSize="10" Foreground="#6F8175" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Button x:Name="TestRecognitionButton" Grid.Column="1" Content="測試辨識 ↗" Style="{StaticResource SmallButton}" Click="TestRecognitionClick" VerticalAlignment="Center" ToolTip="只打開生活力指南並確認文字，不會選取技能" Visibility="Collapsed" />
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Padding="18" Margin="9,0,0,0">
+                <Grid>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="02  /  生活技能" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Mint}" />
+                            <TextBlock Text="選擇要自動執行的項目" FontSize="16" FontWeight="SemiBold" Margin="0,4,0,0" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Background="#17211B" BorderBrush="#34463A" BorderThickness="1" CornerRadius="8" Padding="9,6" VerticalAlignment="Center">
+                            <TextBlock Text="8 種支援" FontSize="10" Foreground="{StaticResource Mint}" />
+                        </Border>
+                    </Grid>
+                    <UniformGrid Grid.Row="1" Columns="2" Rows="4" Margin="0,13,0,11">
+                        <RadioButton x:Name="Skill0" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="0" Checked="SkillSelectionChanged" Margin="0,0,7,6">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/daily.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="01  日常採集" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="收集日常素材" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill1" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="1" Checked="SkillSelectionChanged" Margin="7,0,0,6">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/mining.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="02  採礦" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="採集礦脈與礦石" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill2" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="2" Checked="SkillSelectionChanged" Margin="0,0,7,6">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/logging.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="03  伐木" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="取得木材與樹脂" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill3" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="3" Checked="SkillSelectionChanged" Margin="7,0,0,6">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/shearing.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="04  剪羊毛" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="採集羊毛素材" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill4" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="4" Checked="SkillSelectionChanged" Margin="0,0,7,6">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/tilling.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="05  鋤地" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="整理土地與田畦" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill5" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="5" Checked="SkillSelectionChanged" Margin="7,0,0,6">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/harvesting.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="06  收割" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="收成農作物" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill6" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="6" Checked="SkillSelectionChanged" Margin="0,0,7,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/herbs.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="07  採集藥草" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="收集草藥與花材" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                        <RadioButton x:Name="Skill7" GroupName="LifeSkill" Style="{StaticResource SkillButton}" Tag="7" Checked="SkillSelectionChanged" Margin="7,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Border Style="{StaticResource SkillIconFrame}"><Image Source="/MabiLifeAssistant;component/assets/skill-icons/insects.png" Stretch="Uniform" Margin="3" /></Border>
+                                <StackPanel Margin="11,0,0,0" VerticalAlignment="Center"><TextBlock Text="08  昆蟲採集" FontSize="13" FontWeight="SemiBold" /><TextBlock Text="尋找昆蟲與光群" FontSize="10" Foreground="#819087" Margin="0,3,0,0" /></StackPanel>
+                            </StackPanel>
+                        </RadioButton>
+                    </UniformGrid>
+                    <StackPanel Grid.Row="2" Margin="0,6,0,0">
+                        <TextBlock x:Name="SkillTargetHelpText" Text="會先確認指南，再依畫面文字定位所選技能" FontSize="11" Foreground="{StaticResource TextMuted}" TextAlignment="Center" />
+                        <TextBlock Text="固定流程：停止操作 5 秒後開始；會搜尋整張遊戲畫面的指南針與工作圖案，工作中暫停檢查。" FontSize="10" Foreground="#819087" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Automation options -->
+        <Border Grid.Row="2" Background="#17211C" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="13" Padding="13,10" Margin="0,12,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="InputStabilityCheckBox" Content="等待輸入穩定" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource TextMain}" VerticalAlignment="Center" Checked="InputStabilityChanged" Unchecked="InputStabilityChanged" />
+                        <TextBlock Text="鍵盤與滑鼠停止操作 5 秒後才開始" FontSize="10" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" Margin="10,1,0,0" />
+                    </StackPanel>
+                    <TextBlock Text="輸入穩定會偵測全域鍵盤與滑鼠；程式自動送出的操作不會重設計時。關閉後只等待畫面穩定。" FontSize="10" Foreground="#819087" Margin="1,5,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+                    <TextBlock Text="開始" FontSize="10" Foreground="#819087" VerticalAlignment="Center" Margin="0,0,6,0" />
+                    <Button x:Name="StartHotkeyButton" Content="PageUp" Style="{StaticResource SmallButton}" Padding="10,6" MinWidth="70" Click="EditStartHotkeyClick" ToolTip="點選後按下新的開始按鍵" />
+                    <TextBlock Text="關閉" FontSize="10" Foreground="#819087" VerticalAlignment="Center" Margin="12,0,6,0" />
+                    <Button x:Name="StopHotkeyButton" Content="PageDown" Style="{StaticResource SmallButton}" Padding="10,6" MinWidth="78" Click="EditStopHotkeyClick" ToolTip="點選後按下新的關閉按鍵；Esc 保留為緊急暫停" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Start / pause strip -->
+        <Border Grid.Row="3" Background="#19221E" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="15" Padding="15,12" Margin="0,12,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Border x:Name="RunStateCard" Background="#16241D" BorderBrush="#3B5A48" BorderThickness="1" CornerRadius="12" Padding="10,7" Margin="0,0,16,0" VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="42"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                        <Border x:Name="RunStateIconFrame" Width="34" Height="34" CornerRadius="17" Background="#244A36" BorderBrush="#5DAA7D" BorderThickness="1" VerticalAlignment="Center">
+                            <TextBlock x:Name="RunStateIcon" Text="○" FontSize="20" FontWeight="SemiBold" Foreground="#A6E4C1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="9,0,0,0">
+                            <TextBlock x:Name="RunStateCaption" Text="目前狀態" FontSize="9" Foreground="#8DA496" />
+                            <TextBlock x:Name="RunStatusText" Text="準備就緒" FontSize="17" FontWeight="SemiBold" Foreground="#A6E4C1" />
+                            <TextBlock x:Name="RunDetailText" Text="選取遊戲視窗後即可開始；會等待輸入停止，並搜尋指南針位置是否穩定。" FontSize="10" Foreground="{StaticResource TextMuted}" TextWrapping="Wrap" MaxHeight="30" Margin="0,2,0,0" ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+                <Button x:Name="CopyDebugButton" Grid.Column="1" Content="複製診斷" Style="{StaticResource SmallButton}" Click="CopyDebugClick" IsEnabled="False" MinWidth="92" Margin="0,0,9,0" ToolTip="複製完整錯誤與例外堆疊" />
+                <Button x:Name="StopButton" Grid.Column="2" Content="暫停" Style="{StaticResource SmallButton}" Click="PauseClick" IsEnabled="False" MinWidth="82" Margin="0,0,9,0" />
+                <Button x:Name="StartButton" Grid.Column="3" Content="開始自動生活" Click="StartClick" MinWidth="178" Padding="14,9" FontSize="12" FontWeight="Bold" Foreground="#102018" Background="{StaticResource StartActionGradient}" BorderBrush="#B8F0CA" IsEnabled="False">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="{TemplateBinding Padding}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border x:Name="PlayBadge" Width="23" Height="23" CornerRadius="12" Background="#1B4A35" VerticalAlignment="Center">
+                                            <TextBlock Text="▶" FontSize="9" Foreground="#D9F9E2" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="1,0,0,0" />
+                                        </Border>
+                                        <ContentPresenter Margin="9,0,0,0" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Border x:Name="ArrowBadge" Grid.Column="1" Width="25" Height="25" CornerRadius="9" Background="#75C999" VerticalAlignment="Center" Margin="12,0,0,0">
+                                        <TextBlock Text="→" FontSize="14" FontWeight="Bold" Foreground="#123021" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#C9F4D5" />
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="#E0F9E6" />
+                                    <Setter TargetName="PlayBadge" Property="Background" Value="#16412F" />
+                                    <Setter TargetName="ArrowBadge" Property="Background" Value="#66BD8D" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="Bd" Property="Opacity" Value="0.84" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="Bd" Property="Background" Value="#26342E" />
+                                    <Setter TargetName="Bd" Property="BorderBrush" Value="#3A4C42" />
+                                    <Setter Property="Foreground" Value="#7C9085" />
+                                    <Setter TargetName="PlayBadge" Property="Background" Value="#34483D" />
+                                    <Setter TargetName="ArrowBadge" Property="Background" Value="#34483D" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

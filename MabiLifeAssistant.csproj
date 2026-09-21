@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>MabiLifeAssistant</AssemblyName>
+    <RootNamespace>MabiLifeAssistant</RootNamespace>
+    <ApplicationIcon>assets\app-icon.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>1.0.0</Version>
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tools\**" />
+    <EmbeddedResource Remove="tools\**" />
+    <None Remove="tools\**" />
+    <Page Remove="tools\**" />
+    <Compile Remove="tests\**" />
+    <EmbeddedResource Remove="tests\**" />
+    <None Remove="tests\**" />
+    <Page Remove="tests\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="RapidOcrNet" Version="4.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="models\work-state-model.json" LogicalName="MabiLifeAssistant.models.work-state-model.json" />
+    <None Update="models\v6\*.onnx" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    <None Update="models\v6\*.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    <Resource Include="assets\app-icon.png" />
+    <Resource Include="assets\app-icon.ico" />
+    <Resource Include="assets\life-map-bg.png" />
+    <Resource Include="assets\skill-icons\daily.png" />
+    <Resource Include="assets\skill-icons\mining.png" />
+    <Resource Include="assets\skill-icons\logging.png" />
+    <Resource Include="assets\skill-icons\shearing.png" />
+    <Resource Include="assets\skill-icons\tilling.png" />
+    <Resource Include="assets\skill-icons\harvesting.png" />
+    <Resource Include="assets\skill-icons\herbs.png" />
+    <Resource Include="assets\skill-icons\insects.png" />
+  </ItemGroup>
+
+</Project>

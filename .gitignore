@@ -1,0 +1,37 @@
+# Visual Studio and editor files
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Build output and local SDK cache
+bin/
+obj/
+.dotnet8/
+
+# Local publish output
+dist/
+dist-*/
+dist-final/
+
+# Local datasets, screenshots, diagnostics and test output
+artifacts/
+TestResults/
+*.log
+assets/idle-hud-crop*.png
+assets/skill-icons-sheet.png
+*.trx
+coverage/
+coverage.*
+__pycache__/
+.pytest_cache/
+
+# Legacy OCR cache not required by the current RapidOCR build
+tessdata/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini

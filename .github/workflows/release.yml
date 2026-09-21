@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to publish
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore .\MabiLifeAssistant.sln
+
+      - name: Verify tests
+        run: dotnet test .\tests\MabiLifeAssistant.Tests\MabiLifeAssistant.Tests.csproj --configuration Release
+
+      - name: Publish single-file Windows build
+        shell: pwsh
+        run: .\publish.ps1
+
+      - name: Create release archive
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: Compress-Archive -Path .\dist-final\* -DestinationPath (Join-Path $env:RUNNER_TEMP "MabiLifeAssistant-$env:RELEASE_TAG-win-x64.zip") -Force
+
+      - name: Create GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: gh release create $env:RELEASE_TAG (Join-Path $env:RUNNER_TEMP "MabiLifeAssistant-$env:RELEASE_TAG-win-x64.zip") --generate-notes --title "Mabi Life $env:RELEASE_TAG"
