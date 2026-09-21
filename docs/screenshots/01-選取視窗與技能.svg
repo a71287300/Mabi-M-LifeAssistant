@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="850" viewBox="0 0 1180 850" role="img" aria-labelledby="title desc">
+  <title id="title">選取遊戲視窗與生活技能</title>
+  <desc id="desc">瑪奇生活助手的去識別化操作示意圖，不包含遊戲標題、角色名稱或視窗名稱。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101612"/><stop offset="1" stop-color="#1a2921"/></linearGradient>
+    <linearGradient id="preview" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#1c3c30"/><stop offset="1" stop-color="#283e55"/></linearGradient>
+    <style>
+      .title{font:700 21px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#f1f5f1}.small{font:600 11px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#a6e4c1}.body{font:400 12px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#9aa99f}.skill{font:600 14px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#e9f1eb}.muted{font:400 10px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#819087}.label{font:600 10px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#d7e7da}
+    </style>
+  </defs>
+  <rect width="1180" height="850" rx="16" fill="url(#bg)"/>
+  <rect x="26" y="22" width="1128" height="64" rx="14" fill="#151e19" stroke="#2c3932"/>
+  <rect x="44" y="38" width="36" height="36" rx="11" fill="#294236" stroke="#496451"/>
+  <circle cx="62" cy="56" r="11" fill="#a6e4c1" opacity=".9"/><path d="M62 45 l4 8 8 2-6 5 1 8-7-4-7 4 1-8-6-5 8-2z" fill="#173322"/>
+  <text x="94" y="52" class="small">MABI / LIFE</text><text x="94" y="73" class="title">瑪奇生活助手</text>
+  <rect x="1012" y="39" width="116" height="31" rx="16" fill="#17211b" stroke="#34463a"/><circle cx="1030" cy="54" r="4" fill="#a6e4c1"/><text x="1041" y="58" class="body">準備就緒</text>
+
+  <rect x="26" y="104" width="522" height="620" rx="16" fill="#19221e" stroke="#2c3932"/>
+  <text x="47" y="135" class="small">01 / 遊戲視窗</text><text x="47" y="163" class="title">選取角色所在的視窗</text>
+  <rect x="47" y="183" width="480" height="42" rx="9" fill="#141c18" stroke="#34463a"/><text x="62" y="209" class="label">已選取的遊戲視窗</text><text x="500" y="209" class="body">⌄</text>
+  <rect x="47" y="241" width="480" height="373" rx="12" fill="#0d120f" stroke="#34463a"/>
+  <rect x="60" y="254" width="454" height="347" rx="7" fill="url(#preview)"/>
+  <path d="M64 470 C160 397 208 526 300 450 S438 385 510 446 V598 H64z" fill="#376247" opacity=".75"/>
+  <path d="M64 524 C160 474 248 568 348 504 S446 478 510 520 V598 H64z" fill="#253b54" opacity=".75"/>
+  <circle cx="286" cy="403" r="40" fill="#5aa77a" opacity=".45"/><circle cx="286" cy="384" r="17" fill="#e7d8c4"/><path d="M257 438 Q286 404 315 438 L326 526 H246z" fill="#d1e7db"/><text x="286" y="575" text-anchor="middle" class="label">預覽畫面（已去識別化）</text>
+  <rect x="60" y="254" width="92" height="24" rx="7" fill="#1a2d22"/><circle cx="73" cy="266" r="4" fill="#a6e4c1"/><text x="83" y="270" class="muted">即時預覽</text>
+  <text x="47" y="649" class="body">預覽只供確認視窗；開始後會辨識生活力與採集項目。</text><text x="47" y="672" class="muted">示意圖未保留任何遊戲標題或個人識別資訊。</text>
+
+  <rect x="566" y="104" width="588" height="620" rx="16" fill="#19221e" stroke="#2c3932"/>
+  <text x="588" y="135" class="small">02 / 生活技能</text><text x="588" y="163" class="title">選擇要自動執行的項目</text>
+  <rect x="1052" y="126" width="82" height="26" rx="8" fill="#17211b" stroke="#34463a"/><text x="1068" y="143" class="small">8 種支援</text>
+  <g>
+    <rect x="588" y="190" width="271" height="108" rx="14" fill="#1c2a23" stroke="#547761"/><rect x="604" y="211" width="40" height="40" rx="12" fill="#264a36"/><text x="658" y="229" class="skill">01 日常採集</text><text x="658" y="250" class="muted">收集日常素材</text><circle cx="624" cy="231" r="11" fill="#a6e4c1" opacity=".75"/>
+    <rect x="871" y="190" width="263" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="887" y="211" width="40" height="40" rx="12" fill="#264a36"/><text x="941" y="229" class="skill">02 採礦</text><text x="941" y="250" class="muted">採集礦脈與礦石</text><circle cx="907" cy="231" r="11" fill="#78a9d8" opacity=".75"/>
+    <rect x="588" y="311" width="271" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="604" y="332" width="40" height="40" rx="12" fill="#264a36"/><text x="658" y="350" class="skill">03 伐木</text><text x="658" y="371" class="muted">取得木材與樹脂</text><circle cx="624" cy="352" r="11" fill="#c88c63" opacity=".75"/>
+    <rect x="871" y="311" width="263" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="887" y="332" width="40" height="40" rx="12" fill="#264a36"/><text x="941" y="350" class="skill">04 剪羊毛</text><text x="941" y="371" class="muted">採集羊毛素材</text><circle cx="907" cy="352" r="11" fill="#cda4de" opacity=".75"/>
+    <rect x="588" y="432" width="271" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="604" y="453" width="40" height="40" rx="12" fill="#264a36"/><text x="658" y="471" class="skill">05 鋤地</text><text x="658" y="492" class="muted">整理土地與田畦</text><circle cx="624" cy="473" r="11" fill="#b89260" opacity=".75"/>
+    <rect x="871" y="432" width="263" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="887" y="453" width="40" height="40" rx="12" fill="#264a36"/><text x="941" y="471" class="skill">06 收割</text><text x="941" y="492" class="muted">收成農作物</text><circle cx="907" cy="473" r="11" fill="#d5ba71" opacity=".75"/>
+    <rect x="588" y="553" width="271" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="604" y="574" width="40" height="40" rx="12" fill="#264a36"/><text x="658" y="592" class="skill">07 採集藥草</text><text x="658" y="613" class="muted">收集草藥與花材</text><circle cx="624" cy="594" r="11" fill="#70bb72" opacity=".75"/>
+    <rect x="871" y="553" width="263" height="108" rx="14" fill="#1b2721" stroke="#304338"/><rect x="887" y="574" width="40" height="40" rx="12" fill="#264a36"/><text x="941" y="592" class="skill">08 昆蟲採集</text><text x="941" y="613" class="muted">尋找昆蟲與光群</text><circle cx="907" cy="594" r="11" fill="#b58de4" opacity=".75"/>
+  </g>
+  <rect x="26" y="746" width="1128" height="80" rx="15" fill="#19221e" stroke="#2c3932"/><text x="47" y="778" class="small">等待輸入與畫面穩定</text><text x="47" y="801" class="muted">選取視窗與技能後，即可按「開始自動生活」或使用 PageUp。</text><rect x="1000" y="764" width="134" height="44" rx="12" fill="#8eddb0"/><text x="1024" y="791" class="label" fill="#123021">開始自動生活</text>
+</svg>

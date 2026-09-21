@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="850" viewBox="0 0 1180 850" role="img" aria-labelledby="title desc">
+  <title id="title">等待本輪動作完成</title>
+  <desc id="desc">瑪奇生活助手的去識別化工作狀態示意圖，不包含遊戲標題、角色名稱或視窗名稱。</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101612"/><stop offset="1" stop-color="#1a2921"/></linearGradient>
+    <style>
+      .title{font:700 21px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#f1f5f1}.small{font:600 11px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#a6e4c1}.body{font:400 12px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#9aa99f}.skill{font:600 14px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#e9f1eb}.muted{font:400 10px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#819087}.label{font:600 10px 'Microsoft JhengHei UI','Segoe UI',sans-serif;fill:#d7e7da}
+    </style>
+  </defs>
+  <rect width="1180" height="850" rx="16" fill="url(#bg)"/>
+  <rect x="26" y="22" width="1128" height="64" rx="14" fill="#151e19" stroke="#2c3932"/>
+  <rect x="44" y="38" width="36" height="36" rx="11" fill="#294236" stroke="#496451"/><circle cx="62" cy="56" r="11" fill="#a6e4c1" opacity=".9"/><path d="M62 45 l4 8 8 2-6 5 1 8-7-4-7 4 1-8-6-5 8-2z" fill="#173322"/>
+  <text x="94" y="52" class="small">MABI / LIFE</text><text x="94" y="73" class="title">瑪奇生活助手</text>
+  <rect x="976" y="39" width="152" height="31" rx="16" fill="#2c3d31" stroke="#6aa67d"/><circle cx="994" cy="54" r="4" fill="#e8c78b"/><text x="1005" y="58" class="body">等待本輪動作完成</text>
+  <rect x="26" y="104" width="522" height="620" rx="16" fill="#19221e" stroke="#2c3932"/>
+  <text x="47" y="135" class="small">01 / 遊戲視窗</text><text x="47" y="163" class="title">指定視窗目前正在工作</text>
+  <rect x="47" y="183" width="480" height="42" rx="9" fill="#141c18" stroke="#34463a"/><text x="62" y="209" class="label">已選取的遊戲視窗</text><text x="500" y="209" class="body">⌄</text>
+  <rect x="47" y="241" width="480" height="373" rx="12" fill="#0d120f" stroke="#34463a"/><rect x="60" y="254" width="454" height="347" rx="7" fill="#253b2c"/>
+  <circle cx="286" cy="426" r="91" fill="#6bba7d" opacity=".45"/><circle cx="286" cy="426" r="58" fill="#1e3540" stroke="#b8f0ca" stroke-width="3" opacity=".85"/><rect x="266" y="406" width="40" height="40" rx="7" fill="#f1f5f1"/><text x="286" y="575" text-anchor="middle" class="label">工作圖案已辨識</text><rect x="60" y="254" width="132" height="24" rx="7" fill="#2d4937"/><circle cx="73" cy="266" r="4" fill="#e8c78b"/><text x="83" y="270" class="muted">工作中，暫停點擊</text>
+  <text x="47" y="649" class="body">程式會等待工作圖案消失，再確認畫面回到閒置。</text><text x="47" y="672" class="muted">示意圖未保留任何遊戲標題或個人識別資訊。</text>
+  <rect x="566" y="104" width="588" height="620" rx="16" fill="#19221e" stroke="#2c3932"/>
+  <text x="588" y="135" class="small">02 / 生活技能</text><text x="588" y="163" class="title">目前執行：採礦</text><rect x="1052" y="126" width="82" height="26" rx="8" fill="#17211b" stroke="#34463a"/><text x="1068" y="143" class="small">第 1 輪</text>
+  <rect x="588" y="190" width="546" height="94" rx="14" fill="#203027" stroke="#6aa67d"/><circle cx="630" cy="237" r="24" fill="#2d5a40"/><path d="M620 246 l13-22 5 7 9 2-17 14z" fill="#b8f0ca"/><text x="674" y="230" class="skill">採礦</text><text x="674" y="252" class="muted">已確認進行按鈕，正在完成 10 次採集</text><text x="1081" y="244" class="small">執行中</text>
+  <g opacity=".72">
+    <rect x="588" y="307" width="263" height="108" rx="14" fill="#1b2721" stroke="#304338"/><text x="612" y="342" class="skill">辨識生活力</text><text x="612" y="367" class="muted">已完成</text><circle cx="805" cy="360" r="15" fill="#68bf8d"/><path d="M798 360 l5 5 10-12" fill="none" stroke="#123021" stroke-width="3"/>
+    <rect x="871" y="307" width="263" height="108" rx="14" fill="#1b2721" stroke="#304338"/><text x="895" y="342" class="skill">定位技能</text><text x="895" y="367" class="muted">已完成</text><circle cx="1088" cy="360" r="15" fill="#68bf8d"/><path d="M1081 360 l5 5 10-12" fill="none" stroke="#123021" stroke-width="3"/>
+    <rect x="588" y="438" width="546" height="134" rx="14" fill="#1b2721" stroke="#304338"/><text x="612" y="475" class="skill">安全監控</text><text x="612" y="502" class="muted">搜尋整張畫面的指南針與工作圖案</text><text x="612" y="527" class="muted">辨識不確定時會停止，不猜測點擊位置</text><rect x="612" y="543" width="476" height="5" rx="2" fill="#304338"/><rect x="612" y="543" width="294" height="5" rx="2" fill="#a6e4c1"/>
+  </g>
+  <rect x="26" y="746" width="1128" height="80" rx="15" fill="#19221e" stroke="#2c3932"/><text x="47" y="778" class="small">等待本輪動作完成</text><text x="47" y="801" class="muted">工作中不會送出新的點擊；按「暫停」、PageDown 或 Esc 可停止。</text><rect x="1000" y="764" width="134" height="44" rx="12" fill="#26342e" stroke="#3a4c42"/><text x="1040" y="791" class="muted">暫停</text>
+</svg>

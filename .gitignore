@@ -20,6 +20,9 @@ dist-final/
 artifacts/
 TestResults/
 *.log
+docs/screenshots/*.png
+docs/screenshots/*.jpg
+docs/screenshots/*.jpeg
 assets/idle-hud-crop*.png
 assets/skill-icons-sheet.png
 *.trx
