@@ -4,6 +4,10 @@
 
 簡潔的 Windows 桌面助手，協助執行瑪奇 Mobile 的生活技能。程式只分析使用者指定的遊戲視窗，支援八種採集項目：日常採集、採礦、伐木、剪羊毛、鋤地、收割、採集藥草與昆蟲採集。
 
+> 目前版本只提供繁體中文介面與繁體中文 OCR。
+
+如果這個工具對你有幫助，歡迎在 [Ko-fi 支持 Kai](https://ko-fi.com/kai1120)。
+
 ## 功能
 
 - 選取指定遊戲視窗，提供唯讀即時預覽。
@@ -66,6 +70,7 @@ MabiLifeAssistant/
 ├─ models/work-state-model.json # 工作狀態模型
 ├─ assets/                     # 圖示、背景與技能圖案
 ├─ tools/                      # 訓練與驗證工具
+├─ docs/                       # 操作流程、流程圖與示範截圖
 ├─ publish.ps1                 # Windows x64 發佈腳本
 ├─ LICENSE                     # 授權條款
 └─ NOTICE                      # 作者標示
@@ -77,6 +82,12 @@ MabiLifeAssistant/
 - `Release` 會在推送 `v*` 標籤時建立 GitHub Release，並附上 `MabiLifeAssistant-<版本>-win-x64.zip`。
 - 本機也可以用 `dotnet test .\tests\MabiLifeAssistant.Tests\MabiLifeAssistant.Tests.csproj -c Release` 執行同一批核心測試。
 
+## 操作流程
+
+完整操作步驟與畫面示範請見 [docs/操作流程.md](docs/操作流程.md)。
+
+![程式運行邏輯](docs/operation-flow.svg)
+
 ## 建置與發佈
 
 需要 .NET 8 SDK 與 Windows 環境。
@@ -87,6 +98,16 @@ dotnet build .\MabiLifeAssistant.csproj -c Release
 ```
 
 單檔發佈位置：`dist-final\MabiLifeAssistant.exe`。執行已發布版本不需要另外安裝 .NET 或 Python。
+
+目前公開版本為 `v0.1.0`。從 GitHub 乾淨建置可以使用：
+
+```powershell
+git clone https://github.com/a71287300/Mabi-M-LifeAssistant.git
+cd Mabi-M-LifeAssistant
+dotnet restore .\MabiLifeAssistant.sln
+dotnet test .\tests\MabiLifeAssistant.Tests\MabiLifeAssistant.Tests.csproj -c Release
+.\publish.ps1
+```
 
 ## Dataset 與模型開發
 

@@ -931,6 +931,21 @@ public partial class MainWindow : Window
         }
     }
 
+    private void KoFiClick(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo("https://ko-fi.com/kai1120")
+            {
+                UseShellExecute = true
+            });
+        }
+        catch (Exception exception)
+        {
+            SetErrorStatus("無法開啟 Ko-fi", BuildErrorDetail(exception));
+        }
+    }
+
     private bool HasUserActedSince(long timestamp) => _activityMonitor.LastUserInputMilliseconds > timestamp + 5;
 
     private void PauseClick(object sender, RoutedEventArgs e) => PauseAutomation();
