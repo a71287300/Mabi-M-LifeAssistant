@@ -23,6 +23,14 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Set up Python tooling
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Check dataset tools
+        run: python -m py_compile .\tools\train_work_state.py .\tools\validate_work_state.py
+
       - name: Restore
         run: dotnet restore .\MabiLifeAssistant.sln
 

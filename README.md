@@ -89,7 +89,16 @@ dotnet build .\MabiLifeAssistant.csproj -c Release
 
 ## Dataset 與模型開發
 
-工作狀態的訓練與測試圖片由 `tools/train_work_state.py` 產生，驗證程式為 `tools/validate_work_state.py`。本機產生的擴增資料與診斷截圖放在 `artifacts/`，為避免把大量測試資料上傳到 Git，該資料夾已列入 `.gitignore`。
+工作狀態的訓練與測試圖片由 `tools/train_work_state.py` 產生，驗證程式為 `tools/validate_work_state.py`。來源圖片以 `artifacts/work-state-sources.json` manifest 指定，不依賴某一台電腦的暫存路徑；可從 `tools/work-state-sources.example.json` 複製範本開始。
+
+訓練工具預設會從每個類別保留一個完整來源做測試，其他來源才會產生訓練資料。這讓測試結果能反映不同來源畫面的泛化能力。驗證結果會輸出 accuracy、unknown rate 和 confusion matrix：
+
+```powershell
+python .\tools\train_work_state.py --manifest .\artifacts\work-state-sources.json
+python .\tools\validate_work_state.py --model .\models\work-state-model.json --dataset .\artifacts\work-state-dataset\test
+```
+
+本機產生的擴增資料與診斷截圖放在 `artifacts/`，為避免把大量測試資料上傳到 Git，該資料夾已列入 `.gitignore`。
 
 ## 隱私與限制
 

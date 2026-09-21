@@ -1,0 +1,10 @@
+{
+  "working": [
+    { "name": "working-scene-01", "path": "D:/dataset/mabi/working-01.png", "crop": true },
+    { "name": "working-crop-01", "path": "D:/dataset/mabi/working-crop-01.png", "crop": false }
+  ],
+  "idle": [
+    { "name": "idle-scene-01", "path": "D:/dataset/mabi/idle-01.png", "crop": true },
+    { "name": "idle-crop-01", "path": "D:/dataset/mabi/idle-crop-01.png", "crop": false }
+  ]
+}
