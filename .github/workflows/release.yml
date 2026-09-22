@@ -44,9 +44,40 @@ jobs:
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
         run: Compress-Archive -Path .\dist-final\* -DestinationPath (Join-Path $env:RUNNER_TEMP "MabiLifeAssistant-$env:RELEASE_TAG-win-x64.zip") -Force
 
+      - name: Prepare release notes
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: |
+          $notesPath = Join-Path $env:RUNNER_TEMP "release-notes.md"
+          $notes = @"
+          ## Mabi Life $env:RELEASE_TAG
+
+          瑪奇生活助手的 Windows x64 發布版本，提供繁體中文介面與本機辨識功能。
+
+          ### 主要功能
+
+          - 支援日常採集、採礦、伐木、剪羊毛、鋤地、收割、採集藥草與昆蟲採集。
+          - 使用指定遊戲視窗進行畫面擷取、生活力 OCR 與技能定位。
+          - 工作狀態會持續循環判定，直到使用者按下暫停、PageDown 或 Esc。
+          - 內附可直接執行的 Windows x64 單檔版本。
+
+          ### 使用前請閱讀
+
+          - 操作流程：[README](https://github.com/a71287300/Mabi-M-LifeAssistant/blob/main/README.md)
+          - 免責聲明：[DISCLAIMER.md](https://github.com/a71287300/Mabi-M-LifeAssistant/blob/main/DISCLAIMER.md)
+          - 本專案為第三方非官方工具，與遊戲開發商、發行商、平台或官方組織沒有隸屬、合作、授權或背書關係。
+
+          ### 支持作者
+
+          如果這個工具對你有幫助，歡迎在 [Ko-fi 支持 Kai](https://ko-fi.com/kai1120)。
+          "@
+          Set-Content -Path $notesPath -Value $notes -Encoding utf8
+          "RELEASE_NOTES_PATH=$notesPath" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Create GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
-        run: gh release create $env:RELEASE_TAG (Join-Path $env:RUNNER_TEMP "MabiLifeAssistant-$env:RELEASE_TAG-win-x64.zip") --generate-notes --title "Mabi Life $env:RELEASE_TAG"
+        run: gh release create $env:RELEASE_TAG (Join-Path $env:RUNNER_TEMP "MabiLifeAssistant-$env:RELEASE_TAG-win-x64.zip") --notes-file $env:RELEASE_NOTES_PATH --generate-notes --title "Mabi Life $env:RELEASE_TAG"
