@@ -292,7 +292,7 @@ public partial class MainWindow : Window
             if (lines is null)
                 throw new InvalidOperationException("測試期間偵測到鍵盤或滑鼠操作，已停止辨識。");
 
-            var recognized = CountRecognizedSkills(lines);
+            var recognized = RecognitionRules.CountRecognizedSkills(lines);
             var frame = await Task.Run(() => GameWindowService.CaptureClient(target.Handle));
             var buttonCount = GameWindowService.FindProceedButtons(frame).Count(point => point.HasValue);
             PreviewHelpText.Text = "辨識成功：已在遊戲視窗開啟「生活力指南」。預覽畫面僅供查看。";
@@ -326,7 +326,7 @@ public partial class MainWindow : Window
             var inputAtTestStart = _activityMonitor.LastUserInputMilliseconds;
             var lines = await ReadTargetWindowAsync(target, CancellationToken.None);
             var clientSize = GameWindowService.GetClientSize(target.Handle);
-            var lifePowerLine = FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
+            var lifePowerLine = RecognitionRules.FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
             if (lifePowerLine is null)
             {
                 GameWindowService.PressC(target.Handle);
@@ -336,7 +336,7 @@ public partial class MainWindow : Window
 
                 lines = await ReadTargetWindowAsync(target, CancellationToken.None);
                 clientSize = GameWindowService.GetClientSize(target.Handle);
-                lifePowerLine = FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
+                lifePowerLine = RecognitionRules.FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
             }
 
             if (lifePowerLine is null)
@@ -439,14 +439,14 @@ public partial class MainWindow : Window
             return shouldStop?.Invoke() == true ? null : lines;
 
         var clientSize = GameWindowService.GetClientSize(target.Handle);
-        var lifePowerLine = FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
+        var lifePowerLine = RecognitionRules.FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
         if (lifePowerLine is null)
         {
             // Full-frame OCR can miss the relatively small left-side stat
             // card. Run a second pass on an enlarged crop before pressing C;
             // this also avoids toggling an already-open character panel.
             var enlargedLines = await ReadLifePowerRegionAsync(target, cancellationToken);
-            lifePowerLine = FindLifePowerCardLine(enlargedLines, clientSize.Width, clientSize.Height);
+            lifePowerLine = RecognitionRules.FindLifePowerCardLine(enlargedLines, clientSize.Width, clientSize.Height);
         }
 
         if (lifePowerLine is null)
@@ -471,11 +471,11 @@ public partial class MainWindow : Window
                     return shouldStop?.Invoke() == true ? null : lines;
 
                 clientSize = GameWindowService.GetClientSize(target.Handle);
-                lifePowerLine = FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
+                lifePowerLine = RecognitionRules.FindLifePowerCardLine(lines, clientSize.Width, clientSize.Height);
                 if (lifePowerLine is null)
                 {
                     var enlargedLines = await ReadLifePowerRegionAsync(target, cancellationToken);
-                    lifePowerLine = FindLifePowerCardLine(enlargedLines, clientSize.Width, clientSize.Height);
+                    lifePowerLine = RecognitionRules.FindLifePowerCardLine(enlargedLines, clientSize.Width, clientSize.Height);
                 }
             }
         }
@@ -485,7 +485,7 @@ public partial class MainWindow : Window
             throw new InvalidOperationException(
                 $"在選取的遊戲視窗無法把「生活力」文字與相鄰數值確認為卡片；已停止，沒有猜測點擊位置。" +
                 $" 最後擷取尺寸：{clientSize.Width}×{clientSize.Height}，OCR 文字數：{lines.Count}。" +
-                $" 可見文字摘要：{BuildRecognitionSummary(lines)}");
+                $" 可見文字摘要：{RecognitionRules.BuildRecognitionSummary(lines)}");
         }
         if (shouldStop?.Invoke() == true)
             return null;
@@ -551,7 +551,7 @@ public partial class MainWindow : Window
         IReadOnlyList<RecognizedLine> lines,
         CancellationToken cancellationToken)
     {
-        if (IsLifeSkillsGuide(lines))
+        if (RecognitionRules.IsLifeSkillsGuide(lines))
             return true;
 
         // Small Chinese labels can be missed at different game scaling levels. The
@@ -559,94 +559,6 @@ public partial class MainWindow : Window
         // as a second visual confirmation when OCR is incomplete.
         var frame = await Task.Run(() => GameWindowService.CaptureClient(target.Handle), cancellationToken);
         return GameWindowService.FindProceedButtons(frame).Count(point => point.HasValue) == SkillNames.Length;
-    }
-
-    private static RecognizedLine? FindLifePowerCardLine(IReadOnlyList<RecognizedLine> lines, double width, double height)
-    {
-        var labels = lines.Where(line =>
-        {
-            var text = ScreenTextRecognizer.Normalize(line.Text);
-            return LooksLikeLifePowerLabel(line.Text)
-                   && !text.Contains("指南", StringComparison.Ordinal)
-                   && !text.Contains("技能", StringComparison.Ordinal)
-                   && line.Bounds.X >= width * 0.04
-                   && line.Bounds.X <= width * 0.50
-                   && line.Bounds.Y >= height * 0.10
-                   && line.Bounds.Y <= height * 0.60;
-        });
-
-        foreach (var label in labels.OrderBy(line => line.Bounds.Y))
-        {
-            // The life-power value is a large decorative number and can be
-            // omitted by sparse OCR. An exact label in this constrained card
-            // region is already enough to identify the clickable card safely.
-            if (ScreenTextRecognizer.Normalize(label.Text)
-                .Equals(ScreenTextRecognizer.Normalize("生活力"), StringComparison.Ordinal))
-                return label;
-
-            if (label.Text.Any(char.IsDigit))
-                return label;
-
-            var labelCenterY = label.Bounds.Y + label.Bounds.Height / 2;
-            var labelRight = label.Bounds.Right;
-            var nearbyValue = lines
-                .Where(line => line.Text.Any(char.IsDigit))
-                .Where(line => Math.Abs(line.Bounds.Y + line.Bounds.Height / 2 - labelCenterY)
-                               <= Math.Max(36, label.Bounds.Height * 1.5))
-                .Where(line => line.Bounds.X >= labelRight - 12
-                               && line.Bounds.X - labelRight <= 320)
-                .OrderBy(line => line.Bounds.X - labelRight)
-                .FirstOrDefault();
-
-            if (nearbyValue is not null)
-                return label;
-        }
-
-        return null;
-    }
-
-    private static string BuildRecognitionSummary(IReadOnlyList<RecognizedLine> lines)
-    {
-        var summary = string.Join("；", lines
-            .OrderBy(line => line.Bounds.Y)
-            .ThenBy(line => line.Bounds.X)
-            .Take(24)
-            .Select(line => $"{line.Text}@{line.Bounds.X:0},{line.Bounds.Y:0}"));
-        return string.IsNullOrWhiteSpace(summary) ? "（沒有讀到文字）" : summary;
-    }
-
-    private static bool LooksLikeLifePowerLabel(string value)
-    {
-        var normalized = ScreenTextRecognizer.Normalize(value);
-        if (normalized.Contains("生活力", StringComparison.Ordinal))
-            return true;
-
-        // Tesseract can read the supplied card as "和活10,583": the first
-        // character is confused, and the final 力 is absorbed into the value.
-        // Keep this fallback narrow: it must look like 生活/和活 and remain in
-        // the fixed life-power card region checked by FindLifePowerCardLine.
-        var likelyLifePrefix = normalized.StartsWith("生", StringComparison.Ordinal)
-                               || normalized.StartsWith("和", StringComparison.Ordinal);
-        if (!likelyLifePrefix || !normalized.Contains("活", StringComparison.Ordinal))
-            return false;
-
-        return normalized.Length <= 4
-               || normalized.Contains("力", StringComparison.Ordinal)
-               || normalized.Any(char.IsDigit);
-    }
-
-    private static bool IsLifeSkillsGuide(IReadOnlyList<RecognizedLine> lines)
-    {
-        var text = string.Concat(lines.Select(line => ScreenTextRecognizer.Normalize(line.Text)));
-        return text.Contains(ScreenTextRecognizer.Normalize("生活力指南"), StringComparison.Ordinal)
-               && CountRecognizedSkills(lines) >= 3
-               && lines.Count(line => ScreenTextRecognizer.Normalize(line.Text).Contains("Lv", StringComparison.OrdinalIgnoreCase)) >= 4;
-    }
-
-    private static int CountRecognizedSkills(IReadOnlyList<RecognizedLine> lines)
-    {
-        var text = string.Concat(lines.Select(line => ScreenTextRecognizer.Normalize(line.Text)));
-        return SkillNames.Count(name => text.Contains(ScreenTextRecognizer.Normalize(name), StringComparison.Ordinal));
     }
 
     private void SkillSelectionChanged(object sender, RoutedEventArgs e)
@@ -856,7 +768,7 @@ public partial class MainWindow : Window
             target,
             _selectedSkillIndex,
             _settings.RequireInputStability,
-            _activityMonitor,
+            () => _activityMonitor.LastUserInputMilliseconds,
             OpenLifeSkillsGuideAsync,
             HasUserActedSince,
             stage => _automationStage = stage,

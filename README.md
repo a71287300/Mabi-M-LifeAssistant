@@ -56,16 +56,19 @@
 ```text
 MabiLifeAssistant/
 ├─ MainWindow.xaml            # WPF 介面
-├─ MainWindow.xaml.cs         # 自動流程、快捷鍵與設定
+├─ MainWindow.xaml.cs         # UI 事件、快捷鍵與流程入口
 ├─ AutomationOrchestrator.cs  # 可測試的自動化回合流程
 ├─ AutomationSettings.cs      # 設定讀寫、版本遷移與快捷鍵安全規則
 ├─ WorkStateRoundTracker.cs   # 工作回合狀態機與去抖動
 ├─ SkillCatalog.cs            # 八種支援的生活技能
-├─ GameWindowService.cs       # 視窗擷取、焦點與輸入
+├─ GameWindowService.cs        # 視窗擷取、焦點與輸入
+├─ GameWindowServices.cs       # 自動流程使用的視窗服務邊界與原生實作
+├─ RecognitionRules.cs         # 可測試的生活力與指南 OCR 判斷規則
 ├─ ScreenTextRecognizer.cs    # RapidOCR 文字辨識
 ├─ WorkStateClassifier.cs     # 工作／閒置畫面分類
 ├─ GameMotionDetector.cs       # 指南針與畫面穩定判定
 ├─ UserActivityMonitor.cs      # 鍵盤滑鼠與全域快捷鍵
+├─ tests/                      # OCR、影像辨識、狀態與流程邊界測試
 ├─ models/v6/                  # RapidOCR ONNX 模型
 ├─ models/work-state-model.json # 工作狀態模型
 ├─ assets/                     # 圖示、背景與技能圖案
@@ -76,11 +79,13 @@ MabiLifeAssistant/
 └─ NOTICE                      # 作者標示
 ```
 
+自動流程由 `AutomationOrchestrator` 維持循環與取消流程；`RecognitionRules` 負責 OCR 結果的純判斷；`GameWindowServices` 將擷取、焦點與點擊隔離成可替換邊界。這讓辨識規則與流程安全分支可以在不操作真實遊戲視窗的情況下測試。
+
 ## GitHub Actions
 
 - `CI` 會在 push、pull request 和手動執行時還原、建置、執行測試並產生 Windows x64 發布檔。
 - `Release` 會在推送 `v*` 標籤時建立 GitHub Release，並附上 `MabiLifeAssistant-<版本>-win-x64.zip`。
-- 本機也可以用 `dotnet test .\tests\MabiLifeAssistant.Tests\MabiLifeAssistant.Tests.csproj -c Release` 執行同一批核心測試。
+- 本機也可以用 `dotnet test .\tests\MabiLifeAssistant.Tests\MabiLifeAssistant.Tests.csproj -c Release` 執行同一批核心測試，目前共 21 項。
 
 ## 操作流程
 
