@@ -10,23 +10,25 @@ internal sealed class AutomationOrchestrator
     private readonly int _selectedSkillIndex;
     private readonly string _skillName;
     private readonly bool _requireInputStability;
-    private readonly UserActivityMonitor _activityMonitor;
+    private readonly Func<long> _getLastUserInputMilliseconds;
     private readonly Func<WindowChoice, CancellationToken, Func<bool>?, Task<IReadOnlyList<RecognizedLine>?>> _openGuideAsync;
     private readonly Func<long, bool> _hasUserActedSince;
     private readonly Action<string> _setStage;
     private readonly Action<string, string, string> _setStatus;
     private readonly Action<Exception> _reportRecoverableError;
+    private readonly IGameWindowService _windowService;
 
     public AutomationOrchestrator(
         WindowChoice target,
         int selectedSkillIndex,
         bool requireInputStability,
-        UserActivityMonitor activityMonitor,
+        Func<long> getLastUserInputMilliseconds,
         Func<WindowChoice, CancellationToken, Func<bool>?, Task<IReadOnlyList<RecognizedLine>?>> openGuideAsync,
         Func<long, bool> hasUserActedSince,
         Action<string> setStage,
         Action<string, string, string> setStatus,
-        Action<Exception> reportRecoverableError)
+        Action<Exception> reportRecoverableError,
+        IGameWindowService? windowService = null)
     {
         if (!SkillCatalog.IsValidIndex(selectedSkillIndex))
             throw new ArgumentOutOfRangeException(nameof(selectedSkillIndex));
@@ -35,17 +37,18 @@ internal sealed class AutomationOrchestrator
         _selectedSkillIndex = selectedSkillIndex;
         _skillName = SkillCatalog.Names[selectedSkillIndex];
         _requireInputStability = requireInputStability;
-        _activityMonitor = activityMonitor;
+        _getLastUserInputMilliseconds = getLastUserInputMilliseconds ?? throw new ArgumentNullException(nameof(getLastUserInputMilliseconds));
         _openGuideAsync = openGuideAsync;
         _hasUserActedSince = hasUserActedSince;
         _setStage = setStage;
         _setStatus = setStatus;
         _reportRecoverableError = reportRecoverableError;
+        _windowService = windowService ?? new NativeGameWindowService();
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)
     {
-        var lastInputSeen = _activityMonitor.LastUserInputMilliseconds;
+        var lastInputSeen = _getLastUserInputMilliseconds();
         var lastUiUpdate = 0L;
         var motionDetector = new GameMotionDetector();
         var workStateClassifier = WorkStateClassifier.Create();
@@ -57,15 +60,15 @@ internal sealed class AutomationOrchestrator
         {
             cancellationToken.ThrowIfCancellationRequested();
             _setStage("檢查遊戲視窗");
-            if (!GameWindowService.IsUsable(_target.Handle))
+            if (!_windowService.IsUsable(_target.Handle))
                 throw new InvalidOperationException("遊戲視窗已關閉或最小化。請重新選取視窗後再開始。");
 
             var now = Environment.TickCount64;
-            var lastInput = _activityMonitor.LastUserInputMilliseconds;
+            var lastInput = _getLastUserInputMilliseconds();
             if (now - lastMotionSampleAt >= 900)
             {
                 _setStage("搜尋遊戲畫面中的指南針或工作圖案");
-                var frame = await Task.Run(() => GameWindowService.CaptureClient(_target.Handle), cancellationToken);
+                var frame = await Task.Run(() => _windowService.CaptureClient(_target.Handle), cancellationToken);
                 var workPrediction = workStateClassifier.PredictAnywhere(frame);
                 var observedState = workPrediction.State == WorkState.Unknown && motionDetector.IsWorkIndicatorActive(frame, workPrediction.Bounds)
                     ? WorkState.Working
@@ -163,9 +166,9 @@ internal sealed class AutomationOrchestrator
                 continue;
             }
 
-            lastInputSeen = _activityMonitor.LastUserInputMilliseconds;
+            lastInputSeen = _getLastUserInputMilliseconds();
             _setStage("切換至指定遊戲視窗");
-            if (!GameWindowService.Focus(_target.Handle))
+            if (!_windowService.Focus(_target.Handle))
             {
                 _reportRecoverableError(new InvalidOperationException("指定視窗目前無法取得前景焦點；程式沒有送出任何遊戲操作。"));
                 await Task.Delay(1000, cancellationToken);
@@ -186,8 +189,8 @@ internal sealed class AutomationOrchestrator
                 continue;
 
             _setStage("定位所選採集項目");
-            var skillFrame = await Task.Run(() => GameWindowService.CaptureClient(_target.Handle), cancellationToken);
-            var proceedButtons = GameWindowService.FindProceedButtons(skillFrame);
+            var skillFrame = await Task.Run(() => _windowService.CaptureClient(_target.Handle), cancellationToken);
+            var proceedButtons = _windowService.FindProceedButtons(skillFrame);
             var proceedButton = _selectedSkillIndex < proceedButtons.Count
                 ? proceedButtons[_selectedSkillIndex]
                 : null;
@@ -197,7 +200,7 @@ internal sealed class AutomationOrchestrator
                 continue;
 
             _setStage("點擊所選採集項目的進行按鈕");
-            GameWindowService.Click(_target.Handle, proceedButton.Value);
+            _windowService.Click(_target.Handle, proceedButton.Value);
             await Task.Delay(450, cancellationToken);
             if (_hasUserActedSince(lastInputSeen))
                 continue;
@@ -207,8 +210,8 @@ internal sealed class AutomationOrchestrator
             for (var attempt = 0; attempt < 3; attempt++)
             {
                 await Task.Delay(attempt == 0 ? 250 : 350, cancellationToken);
-                var confirmationFrame = await Task.Run(() => GameWindowService.CaptureClient(_target.Handle), cancellationToken);
-                confirmationButton = GameWindowService.FindConfirmationButton(confirmationFrame);
+                var confirmationFrame = await Task.Run(() => _windowService.CaptureClient(_target.Handle), cancellationToken);
+                confirmationButton = _windowService.FindConfirmationButton(confirmationFrame);
                 if (confirmationButton is not null)
                     break;
             }
@@ -220,7 +223,7 @@ internal sealed class AutomationOrchestrator
             _setStatus("確認採集", "已定位遊戲確認視窗，正在確認十次採集。按 Esc 可停止。", "#A6D7E4");
             if (_hasUserActedSince(lastInputSeen))
                 continue;
-            GameWindowService.Click(_target.Handle, confirmationPoint);
+            _windowService.Click(_target.Handle, confirmationPoint);
             await Task.Delay(450, cancellationToken);
 
             _setStage("等待遊戲動作完成");
